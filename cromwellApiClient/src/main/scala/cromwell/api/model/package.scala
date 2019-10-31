@@ -66,8 +66,8 @@ package object model {
         case Left(response) =>
           implicit def cs = IO.contextShift(executionContext)
           IO.fromFuture(IO {
-            Unmarshal(response.entity).to[String] flatMap { responseString =>
-              Future.failed(UnsuccessfulRequestException(responseString, response))
+            Unmarshal(response.entity).to[String] flatMap { _ =>
+              Future.failed(UnsuccessfulRequestException(response.toString(), response))
             }
           })
         case Right(a) => IO.pure(a)
