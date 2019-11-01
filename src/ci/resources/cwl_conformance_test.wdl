@@ -15,7 +15,8 @@ workflow cwl_conformance_test {
             centaur_cwl_runner = centaur_cwl_runner
     }
 
-    scatter (test_index in range(get_test_count.test_count)) {
+    # scatter (test_index in range(get_test_count.test_count)) {
+    scatter (test_index in range(20)) {
         call run_test_index {
             input:
                 cwl_dir = cwl_dir,
