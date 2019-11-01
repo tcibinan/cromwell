@@ -16,7 +16,7 @@ workflow cwl_conformance_test {
     }
 
     # scatter (test_index in range(get_test_count.test_count)) {
-    scatter (test_index in range(10)) {
+    scatter (test_index in [4, 5, 6]) {
         call run_test_index {
             input:
                 cwl_dir = cwl_dir,
