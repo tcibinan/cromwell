@@ -1,6 +1,7 @@
 package cromwell.backend.google.pipelines.v2alpha1
 
 import common.util.IntUtil._
+import cromwell.backend.google.pipelines.v2alpha1.MachineSpecifications._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.numeric.Positive
 import eu.timepit.refined.refineV
@@ -15,10 +16,6 @@ object MachineConstraints {
     def toMBString = information.to(MemoryUnit.MB).toString
   }
 
-  // https://cloud.google.com/compute/docs/instances/creating-instance-with-custom-machine-type
-  // https://cloud.google.com/compute/docs/instances/creating-instance-with-custom-machine-type#specifications
-  private val minMemoryPerCpu = MemorySize(0.9, MemoryUnit.GB)
-  private val maxMemoryPerCpu = MemorySize(6.5, MemoryUnit.GB)
   private val memoryFactor = MemorySize(256, MemoryUnit.MB)
 
   private def validateCpu(cpu: Int Refined Positive) = cpu.value match {
@@ -32,8 +29,10 @@ object MachineConstraints {
   private def validateMemory(memory: MemorySize) = memory.asMultipleOf(memoryFactor)
 
   // Assumes memory and cpu have been validated individually
-  private def balanceMemoryAndCpu(memory: MemorySize, cpu: Int) = {
+  private def balanceMemoryAndCpu(memory: MemorySize, cpu: Int, specs: MachineSpecification) = {
     val memoryPerCpuRatio = memory.bytes / cpu.toDouble
+    val minMemoryPerCpu = specs.getMinMemoryPerCpu;
+    val maxMemoryPerCpu = specs.getMaxMemoryPerCpu;
 
     lazy val adjustedMemory = MemorySize(minMemoryPerCpu.amount * cpu.toDouble, minMemoryPerCpu.unit) |> validateMemory
 
@@ -69,9 +68,12 @@ object MachineConstraints {
     message foreach { m => logger.info("To comply with GCE custom machine requirements, " + m) }
   }
 
-  def machineType(memory: MemorySize, cpu: Int Refined Positive, jobLogger: Logger) = {
-    val (validCpu, validMemory) = balanceMemoryAndCpu(memory |> validateMemory, cpu |> validateCpu)
+  def machineType(memory: MemorySize, cpu: Int Refined Positive, jobLogger: Logger): String = machineType(memory, cpu, Option.empty, jobLogger)
+
+  def machineType(memory: MemorySize, cpu: Int Refined Positive, cpuPlatform: Option[String], jobLogger: Logger): String = {
+    val specs = getMachineTypeSpecifications(cpuPlatform)
+    val (validCpu, validMemory) = balanceMemoryAndCpu(memory |> validateMemory, cpu |> validateCpu, specs)
     logAdjustment(cpu.value, validCpu, memory, validMemory, jobLogger)
-    s"custom-$validCpu-${validMemory.to(MemoryUnit.MB).amount.intValue()}"
+    s"${specs.getPrefix}custom-$validCpu-${validMemory.to(MemoryUnit.MB).amount.intValue()}"
   }
 }
