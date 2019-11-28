@@ -202,6 +202,26 @@ If the Docker image to be pulled is not public the `docker pull` will fail which
 If using any of these private Docker workflow options it is advisable to add
 them to the `workflow-options.encrypted-fields` list in Cromwell configuration.
 
+**Runtime Compute Engine configuration**  
+_runtime_ section of the WDL task contains information about the required computational resources.
+```
+runtime {
+    cpu: 2
+    memory: '4 GB'
+    cpuPlatform: 'Intel Skylake'
+}
+```
+You can use predefined [machine type](https://cloud.google.com/compute/docs/machine-types) instances with `machineType` attribute.
+```
+runtime {
+    machineType: 'n2-standard-8'
+}
+```
+Cromwell supports all currently available CPU platforms for custom and predefined configurations.
+
+Be aware, when you define both `machineType` and `cpuPlatform`, because instance type [must be available](https://cloud.google.com/compute/docs/cpu-platforms) 
+for CPU platform, or you will receive an exception failing your workflow.
+> The selected machine type (_type_name_) is not compatible with CPU platform _platform_
 
 **Monitoring**
 
