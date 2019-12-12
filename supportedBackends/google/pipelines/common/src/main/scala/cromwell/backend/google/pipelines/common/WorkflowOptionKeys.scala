@@ -6,4 +6,5 @@ object WorkflowOptionKeys {
   val MonitoringImage = "monitoring_image"
   val GoogleProject = "google_project"
   val GoogleComputeServiceAccount = "google_compute_service_account"
+  val EnableFuse = "enable_fuse"
 }

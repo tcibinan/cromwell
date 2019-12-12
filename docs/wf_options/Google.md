@@ -13,6 +13,7 @@ Keys | Possible Values | Description
 `init_script` |`string` |   Specifies a GCS URL to a script that will be executed prior to the user command. The difference between monitoring_script and init_script lies in the fact that user command won't start until init_script is finished. Corresponding log file `init.log` will be automatically de-localized.
 `monitoring_image` |`string` |   Specifies a Docker image to monitor the task. This image will run concurrently with the task container, and provides an alternative mechanism to `monitoring_script` (the latter runs *inside* the task container). For example, one can use `quay.io/broadinstitute/cromwell-monitor`, which reports cpu/memory/disk utilization metrics to [Stackdriver](https://cloud.google.com/monitoring/).
 `google_labels` | `object` | An object containing only string values. Represent custom labels to send with PAPI job requests. Per the PAPI specification, each key and value must conform to the regex `[a-z]([-a-z0-9]*[a-z0-9])?`.
+`enable_fuse` | `boolean` | Specifies if workflow tasks should be submitted to Google Pipelines with an additional `ENABLE_FUSE` flag. It causes container to be executed with `CAP_SYS_ADMIN`. Use it only for trusted containers.
 
 # Example
 ```json
@@ -27,6 +28,7 @@ Keys | Possible Values | Description
   "monitoring_image": "quay.io/broadinstitute/cromwell-monitor",
   "google_labels": {
     "custom-label": "custom-value"
-  }
+  },
+  "enable_fuse": true
 }
 ```
